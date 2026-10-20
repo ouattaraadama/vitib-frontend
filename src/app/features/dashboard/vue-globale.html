@@ -1,0 +1,275 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h1 class="h3 mb-0 d-none d-md-block text-vitib">Tableau de bord</h1>
+  <a routerLink="/evenements/nouveau" class="btn btn-vitib btn-sm sans-impression ms-auto">
+    <i class="bi bi-plus-lg me-1"></i> Créer un évènement
+  </a>
+</div>
+
+<ul class="nav nav-tabs mb-4 sans-impression">
+  <li class="nav-item">
+    <a class="nav-link active" routerLink="/tableau-de-bord">Vue globale</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" routerLink="/historique">Historique</a>
+  </li>
+</ul>
+
+<!-- Cartes statistiques cliquables -->
+<div class="row g-4 mb-4">
+  <div class="col-12 col-md-6">
+    <div
+      class="carte-kpi carte-kpi--bleue h-100"
+      role="button"
+      tabindex="0"
+      [attr.aria-expanded]="detailMoisOuvert()"
+      (click)="basculerDetailMois()"
+      (keydown.enter)="basculerDetailMois()"
+      (keydown.space)="basculerDetailMois()"
+    >
+      <div class="carte-kpi-corps">
+        <div class="carte-kpi-icone carte-kpi-icone--bleue">
+          <i class="bi bi-calendar-event"></i>
+        </div>
+        <div class="carte-kpi-texte">
+          <span class="carte-kpi-valeur">{{ statistiques().evenementsCeMois }}</span>
+          <span class="carte-kpi-libelle">Évènements créés ce mois-ci</span>
+          <span class="carte-kpi-indice">
+            <i
+              class="bi"
+              [class.bi-caret-down-fill]="!detailMoisOuvert()"
+              [class.bi-caret-up-fill]="detailMoisOuvert()"
+            ></i>
+            cliquer pour le détail par mois
+          </span>
+        </div>
+      </div>
+
+      @if (detailMoisOuvert()) {
+        <ul class="carte-kpi-detail">
+          @for (ligne of statistiques().parMois; track ligne.cle) {
+            <li>
+              <span>{{ ligne.libelle }}</span>
+              <span class="pastille-detail">{{ ligne.nombre }}</span>
+            </li>
+          } @empty {
+            <li class="text-muted">Aucun évènement en {{ statistiques().anneeCourante }}.</li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div
+      class="carte-kpi carte-kpi--orange h-100"
+      role="button"
+      tabindex="0"
+      [attr.aria-expanded]="detailAnneeOuvert()"
+      (click)="basculerDetailAnnee()"
+      (keydown.enter)="basculerDetailAnnee()"
+      (keydown.space)="basculerDetailAnnee()"
+    >
+      <div class="carte-kpi-corps">
+        <div class="carte-kpi-icone carte-kpi-icone--orange">
+          <i class="bi bi-bar-chart-fill"></i>
+        </div>
+        <div class="carte-kpi-texte">
+          <span class="carte-kpi-valeur">{{ statistiques().evenementsCetteAnnee }}</span>
+          <span class="carte-kpi-libelle">Évènements créés cette année</span>
+          <span class="carte-kpi-indice">
+            <i
+              class="bi"
+              [class.bi-caret-down-fill]="!detailAnneeOuvert()"
+              [class.bi-caret-up-fill]="detailAnneeOuvert()"
+            ></i>
+            cliquer pour le détail par année
+          </span>
+        </div>
+      </div>
+
+      @if (detailAnneeOuvert()) {
+        <ul class="carte-kpi-detail">
+          @for (ligne of statistiques().parAnnee; track ligne.cle) {
+            <li>
+              <span>{{ ligne.libelle }}</span>
+              <span class="pastille-detail">{{ ligne.nombre }}</span>
+            </li>
+          } @empty {
+            <li class="text-muted">Aucun évènement enregistré.</li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Évènements en cours -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white">
+    <h2 class="h6 mb-0">
+      <span class="text-success">●</span>
+      Évènements en cours
+      <span class="text-muted fw-normal">(clôture automatique à l'heure de fin)</span>
+    </h2>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Évènement</th>
+            <th class="d-none d-md-table-cell">Type</th>
+            <th class="d-none d-lg-table-cell">Organisateur</th>
+            <th>Horaires</th>
+            <th>Présences</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (evenement of enCours(); track evenement.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/evenements', evenement.id]" class="text-decoration-none fw-semibold">
+                  {{ evenement.titre }}
+                </a>
+              </td>
+              <td class="d-none d-md-table-cell">
+                <span [class]="classeType(evenement)">{{ evenement.typeLibelle }}</span>
+              </td>
+              <td class="d-none d-lg-table-cell">{{ evenement.organisateurNom }}</td>
+              <td class="text-nowrap">
+                {{ evenement.heureDebut | heureFr }} – {{ evenement.heureFin | heureFr }}
+              </td>
+              <td><span class="badge text-bg-success">{{ evenement.nbPresences }}</span></td>
+              <td class="text-end">
+                <a
+                  [routerLink]="['/evenements', evenement.id, 'qr']"
+                  class="btn btn-sm btn-outline-secondary"
+                >
+                  <i class="bi bi-qr-code me-1"></i>Code QR
+                </a>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center text-muted py-3">
+                Aucun évènement en cours en ce moment.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Prochains évènements -->
+<div class="card shadow-sm">
+  <div class="card-header bg-white">
+    <h2 class="h6 mb-0"><i class="bi bi-calendar3 text-vitib me-1"></i> Prochains évènements</h2>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Évènement</th>
+            <th class="d-none d-md-table-cell">Type</th>
+            <th class="d-none d-lg-table-cell">Organisateur</th>
+            <th>Date</th>
+            <th class="d-none d-sm-table-cell">Horaires</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (evenement of prochains(); track evenement.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/evenements', evenement.id]" class="text-decoration-none fw-semibold">
+                  {{ evenement.titre }}
+                </a>
+                <app-badge-statut
+                  class="ms-1"
+                  [statut]="evenement.statut"
+                  [libelle]="evenement.statutLibelle"
+                />
+              </td>
+              <td class="d-none d-md-table-cell">
+                <span [class]="classeType(evenement)">{{ evenement.typeLibelle }}</span>
+              </td>
+              <td class="d-none d-lg-table-cell">{{ evenement.organisateurNom }}</td>
+              <td class="text-nowrap">{{ evenement.dateEvenement | dateFr }}</td>
+              <td class="d-none d-sm-table-cell text-nowrap">
+                {{ evenement.heureDebut | heureFr }} – {{ evenement.heureFin | heureFr }}
+              </td>
+              <td class="text-end text-nowrap">
+                <a
+                  [routerLink]="['/evenements', evenement.id, 'qr']"
+                  class="btn btn-sm btn-outline-secondary"
+                >
+                  <i class="bi bi-qr-code me-1"></i>Code QR
+                </a>
+                @if (evenement.estOrganisateur) {
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger ms-1"
+                    (click)="demanderAnnulation(evenement)"
+                  >
+                    <i class="bi bi-x-circle me-1"></i>Annuler
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center text-muted py-3">
+                Aucun évènement à venir.
+                <a routerLink="/evenements/nouveau">Créez-en un !</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation d'annulation -->
+@if (aAnnuler(); as evenement) {
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header modal-header--avertissement">
+          <div class="modal-icone-avertissement">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h2 class="modal-title h5 mb-0">Annuler cet évènement ?</h2>
+          </div>
+          <button type="button" class="btn-close" aria-label="Fermer" (click)="fermerAnnulation()"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Vous êtes sur le point d'annuler « <strong>{{ evenement.titre }}</strong> ».
+          </p>
+          <p class="mb-0 text-muted">
+            Les inscriptions seront refusées et l'évènement apparaîtra comme annulé dans
+            l'historique.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="fermerAnnulation()">Retour</button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="annulationEnCours()"
+            (click)="confirmerAnnulation()"
+          >
+            Confirmer l'annulation
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}

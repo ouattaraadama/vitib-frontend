@@ -1,0 +1,185 @@
+<div
+  class="app-shell"
+  [class.sidebar-reduite]="sidebarReduite()"
+  [class.sidebar-mobile-ouverte]="menuMobileOuvert()"
+>
+  <!-- Sidebar -->
+  <aside class="app-sidebar sans-impression">
+    <div class="sidebar-logo">
+      <img src="assets/images/logo_vitib.png" alt="Logo VITIB" class="sidebar-logo-img" />
+      <span class="sidebar-logo-texte">VITIB <small>Côte d'Ivoire</small></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a 
+        class="sidebar-lien"
+        routerLink="/tableau-de-bord"
+        routerLinkActive="actif"
+        (click)="fermerMenuMobile()"
+      >
+        <i class="bi bi-speedometer2"></i>
+        <span class="sidebar-libelle">Tableau de bord</span>
+      </a>
+
+      <a 
+        class="sidebar-lien"
+        routerLink="/evenements/nouveau"
+        routerLinkActive="actif"
+        (click)="fermerMenuMobile()"
+      >
+        <i class="bi bi-calendar-plus"></i>
+        <span class="sidebar-libelle">Créer un évènement</span>
+      </a>
+
+      <a 
+        class="sidebar-lien"
+        routerLink="/historique"
+        routerLinkActive="actif"
+        (click)="fermerMenuMobile()"
+      >
+        <i class="bi bi-clock-history"></i>
+        <span class="sidebar-libelle">Historique</span>
+      </a>
+
+      <a 
+        class="sidebar-lien"
+        routerLink="/mes-participations"
+        routerLinkActive="actif"
+        (click)="fermerMenuMobile()"
+      >
+        <i class="bi bi-people"></i>
+        <span class="sidebar-libelle">Participants</span>
+      </a>
+
+      @if (auth.estSuperviseur()) {
+        <a 
+          class="sidebar-lien"
+          routerLink="/comptes"
+          routerLinkActive="actif"
+          (click)="fermerMenuMobile()"
+        >
+          <i class="bi bi-person-badge"></i>
+          <span class="sidebar-libelle">Comptes</span>
+        </a>
+
+        <a 
+          class="sidebar-lien"
+          routerLink="/journal"
+          routerLinkActive="actif"
+          (click)="fermerMenuMobile()"
+        >
+          <i class="bi bi-bar-chart-line"></i>
+          <span class="sidebar-libelle">Rapports &amp; journal</span>
+        </a>
+      }
+
+      <a 
+        class="sidebar-lien"
+        routerLink="/profil"
+        routerLinkActive="actif"
+        (click)="fermerMenuMobile()"
+      >
+        <i class="bi bi-gear"></i>
+        <span class="sidebar-libelle">Paramètres</span>
+      </a>
+    </nav>
+
+    <button type="button" class="sidebar-deconnexion" (click)="seDeconnecter()">
+      <i class="bi bi-box-arrow-right"></i>
+      <span class="sidebar-libelle">Déconnexion</span>
+    </button>
+  </aside>
+
+  <!-- Voile d'assombrissement, affichage mobile uniquement -->
+  @if (menuMobileOuvert()) {
+    <div class="sidebar-voile sans-impression" (click)="fermerMenuMobile()"></div>
+  }
+
+  <div class="app-corps">
+    <header class="app-header sans-impression">
+      <button
+        type="button"
+        class="btn-hamburger"
+        aria-label="Afficher ou replier le menu"
+        (click)="basculerSidebar()"
+      >
+        <i class="bi bi-list"></i>
+      </button>
+
+      <h1 class="app-header-titre">{{ titrePage() }}</h1>
+
+      <div class="app-header-actions">
+        <div class="dropdown-notifications">
+          <button
+            type="button"
+            class="btn-notification"
+            aria-label="Notifications"
+            (click)="basculerPanneauNotifications()"
+          >
+            <i class="bi bi-bell"></i>
+            @if (notificationsCompte.nbNonLues() > 0) {
+              <span class="badge-notification">{{ notificationsCompte.nbNonLues() }}</span>
+            }
+          </button>
+
+          @if (panneauNotificationsOuvert()) {
+            <div class="panneau-notifications sans-impression">
+              <div class="panneau-notifications-entete">
+                <span class="fw-semibold">Notifications</span>
+                @if (notificationsCompte.nbNonLues() > 0) {
+                  <button type="button" class="btn btn-link btn-sm p-0" (click)="toutMarquerLues()">
+                    Tout marquer comme lu
+                  </button>
+                }
+              </div>
+
+              <div class="panneau-notifications-liste">
+                @for (notif of notificationsCompte.notifications(); track notif.id) {
+                  <a 
+                    class="panneau-notification-item"
+                    [class.non-lue]="!notif.lu"
+                    [routerLink]="notif.lien ?? null"
+                    (click)="ouvrirNotification(notif.id)"
+                  >
+                    <div class="fw-semibold small">{{ notif.titre }}</div>
+                    <div class="small text-muted">{{ notif.message }}</div>
+                    <div class="small text-muted mt-1">{{ notif.creeLe | tempsEcoule }}</div>
+                  </a>
+                } @empty {
+                  <p class="text-muted small text-center py-3 mb-0">
+                    Aucune notification pour le moment.
+                  </p>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (auth.utilisateur(); as moi) {
+          <a class="app-header-utilisateur" routerLink="/profil">
+            @if (moi.photoProfil) {
+              <img [src]="moi.photoProfil" alt="Photo de profil" class="avatar-utilisateur avatar-utilisateur--photo" />
+            } @else {
+              <span class="avatar-utilisateur">{{ initiales(moi.nomComplet) }}</span>
+            }
+            <span class="app-header-nom">
+              {{ moi.nomComplet }}
+              <app-badge-role [role]="moi.role" [libelle]="moi.roleLibelle" />
+            </span>
+          </a>
+        }
+      </div>
+    </header>
+
+    <main class="app-contenu">
+      <router-outlet />
+    </main>
+
+    <footer class="app-footer text-center text-muted small py-3 sans-impression">
+      VITIB Présences — Village de l'Innovation des Technologies de l'Information et de la
+      Biotechnologie
+      ·
+      <a routerLink="/politique-confidentialite" class="text-muted">Politique de confidentialité</a>
+    </footer>
+  </div>
+</div>

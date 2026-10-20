@@ -1,0 +1,216 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+  <h1 class="h3 mb-0 d-none d-md-block text-vitib">Gestion des comptes</h1>
+  <button type="button" class="btn btn-vitib ms-auto" (click)="ouvrirCreation()">
+    <i class="bi bi-plus-lg me-1"></i> Créer un compte
+  </button>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Nom</th>
+            <th class="d-none d-md-table-cell">Email</th>
+            <th>Rôle</th>
+            <th>Statut</th>
+            <th class="d-none d-lg-table-cell">Dernière connexion</th>
+            <th>Participations</th>
+            @if (auth.estSuperadmin()) {
+              <th class="text-end">Actions</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (compte of comptes(); track compte.id) {
+            <tr [class.table-danger]="!compte.actif">
+              <td>
+                {{ compte.nomComplet }}
+                @if (compte.id === auth.utilisateur()?.id) {
+                  <span class="badge text-bg-light">vous</span>
+                }
+              </td>
+              <td class="d-none d-md-table-cell text-break">{{ compte.email }}</td>
+              <td><app-badge-role [role]="compte.role" [libelle]="compte.roleLibelle" /></td>
+              <td>
+                <app-badge-en-ligne
+                  [enLigne]="compte.enLigne"
+                  [actif]="compte.actif"
+                  [derniereActivite]="compte.derniereActivite"
+                />
+              </td>
+              <td class="d-none d-lg-table-cell small text-muted">
+                {{ compte.derniereConnexion | tempsEcoule }}
+              </td>
+              <td>
+                <a
+                  class="btn btn-sm btn-outline-secondary"
+                  [routerLink]="['/comptes', compte.id, 'participations']"
+                >
+                  <i class="bi bi-eye me-1"></i>Voir
+                </a>
+              </td>
+
+              @if (auth.estSuperadmin()) {
+                <td class="text-end">
+                  @if (compte.modifiable) {
+                    @if (compte.actif) {
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        [disabled]="actionEnCours()"
+                        (click)="demanderBlocage(compte)"
+                      >
+                        <i class="bi bi-slash-circle me-1"></i>Bloquer
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-success"
+                        [disabled]="actionEnCours()"
+                        (click)="reactiver(compte)"
+                      >
+                        <i class="bi bi-check-circle me-1"></i>Réactiver
+                      </button>
+                    }
+                  }
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">Aucun compte à afficher.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Création de compte -->
+@if (creationOuverte()) {
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form [formGroup]="formulaire" (ngSubmit)="creer()" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title h5">
+            <i class="bi bi-person-plus text-vitib me-2"></i>Créer un compte
+          </h2>
+          <button type="button" class="btn-close" aria-label="Fermer" (click)="fermerCreation()"></button>
+        </div>
+
+        <div class="modal-body">
+          @if (erreur(); as message) {
+            <div class="alert alert-danger" role="alert">{{ message }}</div>
+          }
+
+          <div class="mb-3">
+            <label for="nomComplet" class="form-label">
+              Nom complet <span class="text-danger">*</span>
+            </label>
+            <input
+              type="text"
+              id="nomComplet"
+              class="form-control"
+              formControlName="nomComplet"
+              maxlength="120"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="emailCompte" class="form-label">
+              Adresse email <span class="text-danger">*</span>
+            </label>
+            <input
+              type="email"
+              id="emailCompte"
+              class="form-control"
+              formControlName="email"
+              maxlength="190"
+            />
+            <div class="form-text">
+              Si des présences ont déjà été enregistrées avec cette adresse, elles seront
+              automatiquement rattachées au nouveau compte.
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="motDePasseCompte" class="form-label">
+              Mot de passe <span class="text-danger">*</span>
+            </label>
+            <input
+              type="password"
+              id="motDePasseCompte"
+              class="form-control"
+              formControlName="motDePasse"
+              minlength="8"
+              maxlength="72"
+              autocomplete="new-password"
+            />
+            <div class="form-text">8 caractères minimum.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="roleCompte" class="form-label">Rôle <span class="text-danger">*</span></label>
+            <select id="roleCompte" class="form-select" formControlName="role">
+              @for (role of rolesCreables(); track role.valeur) {
+                <option [value]="role.valeur">{{ role.libelle }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="fermerCreation()">Annuler</button>
+          <button type="submit" class="btn btn-vitib" [disabled]="actionEnCours()">
+            Créer le compte
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
+
+<!-- Confirmation de blocage -->
+@if (aBloquer(); as compte) {
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header modal-header--avertissement">
+          <div class="modal-icone-avertissement">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h2 class="modal-title h5 mb-0">Bloquer ce compte ?</h2>
+          </div>
+          <button type="button" class="btn-close" aria-label="Fermer" (click)="fermerBlocage()"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Vous êtes sur le point de bloquer le compte de
+            <strong>{{ compte.nomComplet }}</strong>.
+          </p>
+          <p class="mb-0 text-muted">
+            La personne ne pourra plus se connecter et sera déconnectée automatiquement dans les
+            deux minutes. Vous pourrez réactiver le compte à tout moment.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="fermerBlocage()">Annuler</button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="actionEnCours()"
+            (click)="confirmerBlocage()"
+          >
+            Confirmer le blocage
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}

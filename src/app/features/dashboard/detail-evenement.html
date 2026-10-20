@@ -1,0 +1,329 @@
+@let ev = evenement();
+@let cr = compteRendu();
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 sans-impression">
+  <button type="button" class="btn btn-outline-secondary btn-sm" (click)="retourHistorique()">
+    <i class="bi bi-arrow-left me-1"></i> Retour
+  </button>
+  <div class="d-flex gap-2">
+    <a [routerLink]="['/evenements', ev.id, 'qr']" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-qr-code me-1"></i> Code QR
+    </a>
+    <button type="button" class="btn btn-vitib btn-sm" (click)="imprimer()">
+      <i class="bi bi-printer me-1"></i> Imprimer la liste
+    </button>
+  </div>
+</div>
+
+<!-- Résumé -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between flex-wrap gap-3">
+      <div>
+        <h1 class="h4 text-vitib mb-1">{{ ev.titre }}</h1>
+        <p class="mb-1">
+          <span [class]="classeType()">{{ ev.typeLibelle }}</span>
+          <app-badge-statut [statut]="ev.statut" [libelle]="ev.statutLibelle" />
+        </p>
+        <p class="mb-1">
+          <strong>{{ ev.dateEvenement | dateLongueFr }}</strong>
+          de {{ ev.heureDebut | heureFr }} à {{ ev.heureFin | heureFr }}
+        </p>
+        <p class="mb-1 text-muted">Organisateur : {{ ev.organisateurNom }}</p>
+        @if (ev.salleLibelle) {
+          <p class="mb-0">
+            <i class="bi bi-door-open text-vitib me-1"></i>{{ ev.salleLibelle }}
+          </p>
+        }
+        @if (ev.description) {
+          <p class="text-muted mb-0 mt-2" style="white-space: pre-line">{{ ev.description }}</p>
+        }
+      </div>
+
+      <div class="text-center">
+        <div class="display-5 fw-bold text-vitib">{{ ev.nbPresences }}</div>
+        <div class="text-muted">participant(s)</div>
+        @if (ev.peutAnnuler) {
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm mt-2 sans-impression"
+            (click)="demanderAnnulation()"
+          >
+            <i class="bi bi-x-circle me-1"></i> Annuler l'évènement
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Période d'enregistrement -->
+<div class="card shadow-sm mb-4 sans-impression">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h2 class="h6 mb-0"><i class="bi bi-clock text-vitib me-1"></i> Période d'enregistrement des présences</h2>
+    @if (ev.inscriptionOuverte) {
+      <span class="badge text-bg-success">Inscriptions ouvertes</span>
+    } @else {
+      <span class="badge text-bg-secondary">Inscriptions fermées</span>
+    }
+  </div>
+
+  <div class="card-body">
+    <p class="text-muted small mb-3">{{ ev.messageEnregistrement }}</p>
+
+    @if (ev.peutProgrammerEnregistrement) {
+      <form [formGroup]="formulairePeriode" (ngSubmit)="programmerPeriode()" class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label for="ouvreLe" class="form-label small mb-1">Ouverture de l'enregistrement</label>
+          <input
+            type="datetime-local"
+            id="ouvreLe"
+            class="form-control form-control-sm"
+            formControlName="enregistrementOuvreLe"
+          />
+        </div>
+        <div class="col-12 col-md-4">
+          <label for="fermeLe" class="form-label small mb-1">Fin de l'enregistrement</label>
+          <input
+            type="datetime-local"
+            id="fermeLe"
+            class="form-control form-control-sm"
+            formControlName="enregistrementFermeLe"
+          />
+        </div>
+        <div class="col-12 col-md-4 d-flex gap-2">
+          <button type="submit" class="btn btn-vitib btn-sm" [disabled]="actionEnCours()">
+            Programmer
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            [disabled]="actionEnCours()"
+            (click)="reinitialiserPeriode()"
+          >
+            Réinitialiser (défaut)
+          </button>
+        </div>
+        <div class="form-text mb-0">
+          Laissez un champ vide pour garder son comportement par défaut. Une clôture programmée
+          permet de fermer les inscriptions avant la fin de l'évènement, ou de les laisser
+          ouvertes après.
+        </div>
+      </form>
+    }
+  </div>
+</div>
+
+<!-- Compte rendu -->
+<div class="card shadow-sm mb-4 sans-impression">
+  <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="bi bi-file-earmark-text text-vitib me-1"></i> Compte rendu</h2></div>
+  <div class="card-body">
+    @if (cr) {
+      <h3 class="h6">{{ cr.objet }}</h3>
+      <p class="text-muted small mb-2">
+        Rédigé par {{ cr.auteurNom }} le {{ cr.creeLe | dateFr }}
+        @if (cr.dejaEnvoye) {
+          — envoyé à {{ cr.nbEnvoyes }}/{{ cr.nbDestinataires }} destinataire(s) (dernier envoi :
+          {{ cr.dernierEnvoiLe | dateFr }})
+        } @else {
+          — <span class="text-danger fw-semibold">jamais envoyé</span>
+        }
+      </p>
+
+      <div class="border rounded p-3 bg-light mb-3" style="white-space: pre-line">{{ cr.contenu }}</div>
+
+      @if (ev.estOrganisateur) {
+        <div class="d-flex gap-2 flex-wrap">
+          <button
+            type="button"
+            [class]="cr.dejaEnvoye ? 'btn btn-outline-secondary btn-sm' : 'btn btn-vitib btn-sm'"
+            [disabled]="actionEnCours() || !ev.emailConfigure"
+            [title]="ev.emailConfigure ? '' : 'Configuration SMTP requise'"
+            (click)="envoyerCompteRendu()"
+          >
+            <i class="bi bi-envelope me-1"></i>
+            {{ cr.dejaEnvoye ? 'Renvoyer aux participants' : 'Envoyer aux participants' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="basculerModification()">
+            <i class="bi bi-pencil me-1"></i> Modifier
+          </button>
+        </div>
+
+        @if (modificationOuverte()) {
+          <form
+            [formGroup]="formulaireCompteRendu"
+            (ngSubmit)="enregistrerCompteRendu()"
+            class="border rounded p-3 mt-3"
+          >
+            <div class="mb-3">
+              <label for="objetCr" class="form-label">Objet <span class="text-danger">*</span></label>
+              <input type="text" id="objetCr" class="form-control" formControlName="objet" maxlength="200" />
+            </div>
+            <div class="mb-3">
+              <label for="contenuCr" class="form-label">Contenu <span class="text-danger">*</span></label>
+              <textarea id="contenuCr" class="form-control" rows="7" formControlName="contenu"></textarea>
+            </div>
+            <button type="submit" class="btn btn-vitib btn-sm" [disabled]="actionEnCours()">
+              Mettre à jour
+            </button>
+            @if (cr.dejaEnvoye) {
+              <span class="form-text ms-2">Déjà envoyé : pensez à le renvoyer après modification.</span>
+            }
+          </form>
+        }
+      }
+    } @else if (ev.peutRedigerCompteRendu) {
+      @if (ev.statut === 'en_cours') {
+        <div class="alert alert-info small py-2">
+          <i class="bi bi-info-circle me-1"></i>
+          Réunion en cours : le compte rendu sera <strong>enregistré sans être envoyé</strong>.
+          Vous pourrez le compléter au fil de la réunion, puis l'envoyer aux participants quand
+          vous le déciderez.
+        </div>
+      } @else if (!ev.emailConfigure) {
+        <div class="alert alert-warning small py-2">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          Configuration SMTP incomplète : le compte rendu sera enregistré mais ne pourra pas être
+          envoyé pour le moment.
+        </div>
+      }
+
+      <form [formGroup]="formulaireCompteRendu" (ngSubmit)="enregistrerCompteRendu()">
+        <div class="mb-3">
+          <label for="objetNouveau" class="form-label">Objet <span class="text-danger">*</span></label>
+          <input type="text" id="objetNouveau" class="form-control" formControlName="objet" maxlength="200" />
+        </div>
+        <div class="mb-3">
+          <label for="contenuNouveau" class="form-label">Contenu <span class="text-danger">*</span></label>
+          <textarea
+            id="contenuNouveau"
+            class="form-control"
+            rows="7"
+            formControlName="contenu"
+            placeholder="Points abordés, décisions, prochaines étapes…"
+          ></textarea>
+        </div>
+        <button type="submit" class="btn btn-vitib" [disabled]="actionEnCours()">
+          {{ ev.statut === 'en_cours' ? 'Enregistrer le compte rendu' : 'Enregistrer et envoyer aux participants' }}
+        </button>
+        @if (ev.statut !== 'en_cours') {
+          <div class="form-text mt-2">
+            Sera envoyé à {{ ev.nbDestinatairesPotentiels }} participant(s) ayant renseigné un email.
+          </div>
+        }
+      </form>
+    } @else if (ev.statut === 'annule') {
+      <p class="text-muted mb-0">Aucun compte rendu — évènement annulé.</p>
+    } @else if (ev.statut === 'a_venir') {
+      <p class="text-muted mb-0">
+        Aucun compte rendu — la rédaction sera possible ici même, dès le début de la réunion@if (!ev.estOrganisateur) {<span>, par l'organisateur</span>}.
+      </p>
+    } @else {
+      <p class="text-muted mb-0">
+        Aucun compte rendu pour cet évènement (seul l'organisateur, {{ ev.organisateurNom }}, peut
+        le rédiger).
+      </p>
+    }
+  </div>
+</div>
+
+<!-- Feuille d'émargement -->
+<div class="card shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h2 class="h6 mb-0"><i class="bi bi-people text-vitib me-1"></i> Liste des participants</h2>
+    <span class="text-muted small a-imprimer-seulement">
+      {{ ev.titre }} — {{ ev.dateEvenement | dateFr }}
+    </span>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 4rem">#</th>
+            <th>Nom</th>
+            <th class="d-none d-md-table-cell">Email</th>
+            <th class="sans-impression">Heure d'arrivée</th>
+            <th class="d-none d-sm-table-cell">Date d'enregistrement</th>
+            <th>Signature</th>
+            <th class="sans-impression d-none d-lg-table-cell">Compte lié</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (participant of participants(); track participant.id) {
+            <tr>
+              <td>{{ participant.numero }}</td>
+              <td>{{ participant.nomComplet }}</td>
+              <td class="d-none d-md-table-cell">{{ participant.email ?? '—' }}</td>
+              <td class="sans-impression">{{ participant.heureArrivee | heureFr }}</td>
+              <td class="d-none d-sm-table-cell">{{ participant.enregistreLe | dateFr }}</td>
+              <td>
+                @if (participant.signatureEffacee) {
+                  <span class="text-muted small">effacée (rétention)</span>
+                } @else {
+                  <img
+                    [src]="participant.signature"
+                    [alt]="'Signature de ' + participant.nomComplet"
+                    class="vignette-signature"
+                  />
+                }
+              </td>
+              <td class="sans-impression d-none d-lg-table-cell">
+                @if (participant.compteNom) {
+                  <span class="badge text-bg-light border">{{ participant.compteNom }}</span>
+                } @else {
+                  <span class="text-muted small">—</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">Aucune présence enregistrée.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="a-imprimer-seulement text-center fw-bold mt-3" style="color: #003366">VITIB</div>
+  </div>
+</div>
+
+<!-- Confirmation d'annulation -->
+@if (confirmationAnnulation()) {
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header modal-header--avertissement">
+          <div class="modal-icone-avertissement">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h2 class="modal-title h5 mb-0">Annuler cet évènement ?</h2>
+          </div>
+          <button type="button" class="btn-close" aria-label="Fermer" (click)="fermerAnnulation()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Vous êtes sur le point d'annuler « <strong>{{ ev.titre }}</strong> ».</p>
+          <p class="mb-0 text-muted">
+            Les inscriptions seront refusées et l'évènement apparaîtra comme annulé dans
+            l'historique.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="fermerAnnulation()">Retour</button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="actionEnCours()"
+            (click)="confirmerAnnulation()"
+          >
+            Confirmer l'annulation
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}

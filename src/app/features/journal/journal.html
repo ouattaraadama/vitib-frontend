@@ -1,0 +1,159 @@
+@let pagination = page();
+
+<h1 class="h3 mb-1">Journal des connexions</h1>
+<p class="text-muted mb-4">
+  Qui s'est connecté, quand, et qui est en ligne en ce moment
+  {{ auth.estSuperadmin() ? '(tous les comptes)' : '(périmètre : les comptes utilisateurs)' }}.
+</p>
+
+<!-- Qui est en ligne -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white"><h2 class="h6 mb-0">🟢 Qui est en ligne ?</h2></div>
+  <div class="card-body">
+    <div class="d-flex flex-wrap gap-3">
+      @for (compte of comptes(); track compte.id) {
+        <div
+          class="border rounded px-3 py-2 d-flex align-items-center gap-2"
+          [class.opacity-50]="!compte.actif"
+        >
+          <span>{{ compte.nomComplet }}</span>
+          <app-badge-role [role]="compte.role" [libelle]="compte.roleLibelle" />
+          <app-badge-en-ligne
+            [enLigne]="compte.enLigne"
+            [actif]="compte.actif"
+            [derniereActivite]="compte.derniereActivite"
+          />
+        </div>
+      } @empty {
+        <p class="text-muted mb-0">Aucun compte dans votre périmètre.</p>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Filtres -->
+<form [formGroup]="formulaire" (ngSubmit)="filtrer()" class="card shadow-sm mb-3 sans-impression">
+  <div class="card-body row g-2 align-items-end">
+    <div class="col-12 col-md-3">
+      <label for="j_utilisateur" class="form-label small mb-1">Utilisateur</label>
+      <select id="j_utilisateur" class="form-select form-select-sm" formControlName="utilisateurId">
+        <option value="">Tous</option>
+        @for (compte of comptes(); track compte.id) {
+          <option [value]="compte.id">{{ compte.nomComplet }} ({{ compte.roleLibelle }})</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <label for="j_action" class="form-label small mb-1">Action</label>
+      <select id="j_action" class="form-select form-select-sm" formControlName="action">
+        <option value="">Toutes</option>
+        @for (action of actions; track action.valeur) {
+          <option [value]="action.valeur">{{ action.libelle }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label for="j_debut" class="form-label small mb-1">Du</label>
+      <input type="date" id="j_debut" class="form-control form-control-sm" formControlName="dateDebut" />
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label for="j_fin" class="form-label small mb-1">Au</label>
+      <input type="date" id="j_fin" class="form-control form-control-sm" formControlName="dateFin" />
+    </div>
+
+    <div class="col-6 col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-vitib btn-sm">Filtrer</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="reinitialiser()">
+        Réinitialiser
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- Journal -->
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 table-stable table-journal">
+        <thead class="table-light">
+          <tr>
+            <th>Date &amp; heure</th>
+            <th>Utilisateur</th>
+            <th>Action</th>
+            <th>Adresse IP</th>
+            <th class="d-none d-lg-table-cell">Navigateur</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entree of entrees(); track entree.id) {
+            <tr>
+              <td class="text-nowrap">
+                {{ entree.creeLe | dateFr }} <strong>{{ entree.creeLe | heureFr }}</strong>
+              </td>
+              <td>
+                @if (entree.utilisateurNom && entree.role) {
+                  {{ entree.utilisateurNom }}
+                  <app-badge-role [role]="entree.role" [libelle]="entree.roleLibelle ?? ''" />
+                } @else {
+                  <span class="text-muted">
+                    {{ entree.emailTente }} <small>(compte inconnu)</small>
+                  </span>
+                }
+              </td>
+              <td><span [class]="classeAction(entree.action)">{{ entree.actionLibelle }}</span></td>
+              <td class="small text-muted">{{ entree.adresseIp }}</td>
+              <td class="small text-muted d-none d-lg-table-cell text-truncate">
+                {{ entree.navigateur }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                Aucune entrée ne correspond à ces critères.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2 sans-impression">
+  <p class="text-muted small mb-0">
+    @if (pagination.total === 0) {
+      Aucune entrée pour ces critères.
+    } @else {
+      Entrées <strong>{{ premiereEntree() }}</strong> à <strong>{{ derniereEntree() }}</strong> sur
+      <strong>{{ pagination.total }}</strong>, les plus récentes d'abord.
+    }
+  </p>
+
+  @if (pagination.nbPages > 1) {
+    <nav aria-label="Pagination du journal">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="pagination.page <= 1">
+          <button type="button" class="page-link" (click)="allerPage(pagination.page - 1)">
+            « Précédent
+          </button>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">Page {{ pagination.page }} sur {{ pagination.nbPages }}</span>
+        </li>
+        <li class="page-item" [class.disabled]="pagination.page >= pagination.nbPages">
+          <button type="button" class="page-link" (click)="allerPage(pagination.page + 1)">
+            Suivant »
+          </button>
+        </li>
+      </ul>
+    </nav>
+  }
+</div>
+
+<p class="text-muted small mt-2">
+  Les entrées les plus anciennes sont supprimées automatiquement par la rétention ; l'année
+  écoulée reste consultable.
+</p>

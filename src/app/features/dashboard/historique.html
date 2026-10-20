@@ -1,0 +1,149 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h1 class="h3 mb-0 d-none d-md-block text-vitib">Tableau de bord</h1>
+  <a routerLink="/evenements/nouveau" class="btn btn-vitib btn-sm sans-impression ms-auto">
+    <i class="bi bi-plus-lg me-1"></i> Créer un évènement
+  </a>
+</div>
+
+<ul class="nav nav-tabs mb-4 sans-impression">
+  <li class="nav-item">
+    <a class="nav-link" routerLink="/tableau-de-bord">Vue globale</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" routerLink="/historique">Historique</a>
+  </li>
+</ul>
+
+<form
+  [formGroup]="formulaire"
+  (ngSubmit)="rechercher()"
+  class="card shadow-sm mb-3 sans-impression"
+>
+  <div class="card-body row g-2 align-items-end">
+    <div class="col-6 col-md-2">
+      <label for="f_annee" class="form-label small mb-1">Année</label>
+      <select id="f_annee" class="form-select form-select-sm" formControlName="annee">
+        <option value="">Toutes</option>
+        @for (annee of annees(); track annee) {
+          <option [value]="annee">{{ annee }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label for="f_mois" class="form-label small mb-1">Mois</label>
+      <select id="f_mois" class="form-select form-select-sm" formControlName="mois">
+        <option value="">Tous</option>
+        @for (libelle of mois; track $index) {
+          <option [value]="$index + 1">{{ libelle }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label for="f_debut" class="form-label small mb-1">Du</label>
+      <input
+        type="date"
+        id="f_debut"
+        class="form-control form-control-sm"
+        formControlName="dateDebut"
+      />
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label for="f_fin" class="form-label small mb-1">Au</label>
+      <input type="date" id="f_fin" class="form-control form-control-sm" formControlName="dateFin" />
+    </div>
+
+    <div class="col-12 col-md-2">
+      <label for="f_titre" class="form-label small mb-1">Titre</label>
+      <input
+        type="text"
+        id="f_titre"
+        class="form-control form-control-sm"
+        formControlName="titre"
+        placeholder="Réunion…"
+      />
+    </div>
+
+    <div class="col-12 col-md-2">
+      <label for="f_participant" class="form-label small mb-1">Participant</label>
+      <input
+        type="text"
+        id="f_participant"
+        class="form-control form-control-sm"
+        formControlName="participant"
+        placeholder="Nom du participant"
+      />
+    </div>
+
+    <div class="col-12 d-flex gap-2 pt-2">
+      <button type="submit" class="btn btn-vitib btn-sm">
+        <i class="bi bi-search me-1"></i> Rechercher
+      </button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="reinitialiser()">
+        <i class="bi bi-arrow-counterclockwise me-1"></i> Réinitialiser
+      </button>
+    </div>
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Évènement</th>
+            <th class="d-none d-md-table-cell">Type</th>
+            <th class="d-none d-lg-table-cell">Organisateur</th>
+            <th>Date</th>
+            <th class="d-none d-sm-table-cell">Horaires</th>
+            <th>Statut</th>
+            <th class="text-end">Présences</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (evenement of evenements(); track evenement.id) {
+            <tr>
+              <td>
+                <a
+                  [routerLink]="['/evenements', evenement.id]"
+                  class="text-decoration-none fw-semibold"
+                >
+                  {{ evenement.titre }}
+                </a>
+              </td>
+              <td class="d-none d-md-table-cell">
+                <span [class]="classeType(evenement)">{{ evenement.typeLibelle }}</span>
+              </td>
+              <td class="d-none d-lg-table-cell">{{ evenement.organisateurNom }}</td>
+              <td class="text-nowrap">{{ evenement.dateEvenement | dateFr }}</td>
+              <td class="d-none d-sm-table-cell text-nowrap">
+                {{ evenement.heureDebut | heureFr }} – {{ evenement.heureFin | heureFr }}
+              </td>
+              <td>
+                <app-badge-statut [statut]="evenement.statut" [libelle]="evenement.statutLibelle" />
+              </td>
+              <td class="text-end">
+                <span class="badge text-bg-secondary">{{ evenement.nbPresences }}</span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                Aucun évènement passé ne correspond à ces critères.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<p class="text-muted small mt-2">
+  <i class="bi bi-info-circle me-1"></i>
+  Cliquez sur un évènement pour voir son détail, son compte rendu et la liste imprimable des
+  participants.
+</p>

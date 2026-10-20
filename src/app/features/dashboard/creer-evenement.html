@@ -1,0 +1,161 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9 col-xl-7">
+    <div class="card shadow-sm">
+      <div class="card-header bg-vitib text-white">
+        <h1 class="h5 mb-0">Créer un évènement</h1>
+      </div>
+
+      <div class="card-body p-4">
+        @if (erreur(); as message) {
+          <div class="alert alert-danger" role="alert">{{ message }}</div>
+        }
+
+        <form [formGroup]="formulaire" (ngSubmit)="soumettre()" novalidate>
+          <div class="mb-3">
+            <label for="titre" class="form-label">
+              Titre <span class="text-danger">*</span>
+            </label>
+            <input
+              type="text"
+              id="titre"
+              class="form-control"
+              formControlName="titre"
+              maxlength="200"
+              placeholder="Ex : Réunion du personnel"
+            />
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="type" class="form-label">
+                Type d'évènement <span class="text-danger">*</span>
+              </label>
+              <select id="type" class="form-select" formControlName="type">
+                @for (type of types; track type.valeur) {
+                  <option [value]="type.valeur">{{ type.libelle }}</option>
+                }
+              </select>
+            </div>
+
+            @if (precisionRequise()) {
+              <div class="col-md-6 mb-3">
+                <label for="typePrecision" class="form-label">
+                  Précisez le type <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="typePrecision"
+                  class="form-control"
+                  formControlName="typePrecision"
+                  maxlength="150"
+                  placeholder="Ex : Atelier de travail"
+                />
+              </div>
+            }
+          </div>
+
+          <div class="mb-4">
+            <label for="salle" class="form-label">
+              Salle de réunion <span class="text-muted">(optionnelle)</span>
+            </label>
+            <select id="salle" class="form-select" formControlName="salle">
+              <option value="">Aucune réservation de salle</option>
+              @for (salle of salles; track salle.valeur) {
+                <option [value]="salle.valeur">{{ salle.libelle }}</option>
+              }
+            </select>
+            <div class="form-text">
+              La salle sera réservée pour toute la durée de l'évènement. Un conflit d'horaire
+              avec une autre réservation sera signalé automatiquement.
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label for="dateEvenement" class="form-label">
+                Date <span class="text-danger">*</span>
+              </label>
+              <input
+                type="date"
+                id="dateEvenement"
+                class="form-control"
+                formControlName="dateEvenement"
+              />
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label for="heureDebut" class="form-label">
+                Heure de début <span class="text-danger">*</span>
+              </label>
+              <input type="time" id="heureDebut" class="form-control" formControlName="heureDebut" />
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label for="heureFin" class="form-label">
+                Heure de fin <span class="text-danger">*</span>
+              </label>
+              <input type="time" id="heureFin" class="form-control" formControlName="heureFin" />
+              <div class="form-text">L'évènement sera clôturé automatiquement à cette heure.</div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="description" class="form-label">
+              Description <span class="text-muted">(optionnelle)</span>
+            </label>
+            <textarea
+              id="description"
+              class="form-control"
+              rows="3"
+              formControlName="description"
+              placeholder="Ordre du jour, lieu, informations pratiques…"
+            ></textarea>
+          </div>
+
+          <hr />
+
+          <p class="fw-semibold mb-1">
+            🕒 Période d'enregistrement des présences
+            <span class="text-muted fw-normal">(optionnelle)</span>
+          </p>
+          <p class="form-text mt-0 mb-2">
+            Laissez vide pour le comportement par défaut : ouvert dès la création, clos
+            automatiquement à l'heure de fin. Modifiable ensuite depuis le détail de l'évènement.
+          </p>
+
+          <div class="row mb-4">
+            <div class="col-md-6 mb-2">
+              <label for="ouvreLe" class="form-label small mb-1">
+                Ouverture de l'enregistrement
+              </label>
+              <input
+                type="datetime-local"
+                id="ouvreLe"
+                class="form-control form-control-sm"
+                formControlName="enregistrementOuvreLe"
+              />
+            </div>
+            <div class="col-md-6 mb-2">
+              <label for="fermeLe" class="form-label small mb-1">Fin de l'enregistrement</label>
+              <input
+                type="datetime-local"
+                id="fermeLe"
+                class="form-control form-control-sm"
+                formControlName="enregistrementFermeLe"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-vitib w-100" [disabled]="envoiEnCours()">
+            @if (envoiEnCours()) {
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              Création en cours…
+            } @else {
+              Créer l'évènement et générer le code QR
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

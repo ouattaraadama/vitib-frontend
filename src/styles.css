@@ -1,0 +1,979 @@
+/* ============================================================================
+  VITIB Présences — complément à Bootstrap 5
+  Refonte visuelle : Sidebar + Header, cartes KPI, tableaux, badges, modales
+  Couleurs du logo VITIB :
+  bleu marine #003366 · orange #F7941D · cyan #00AEEF · vert #4CAF50
+   ============================================================================ */
+
+
+
+:root {
+  --vitib-bleu: #003366;
+  --vitib-bleu-fonce: #002347;
+  --vitib-bleu-clair: #e8f0fa;
+  --vitib-orange: #f7941d;
+  --vitib-orange-fonce: #d97e0f;
+  --vitib-orange-clair: #fef1e0;
+  --vitib-cyan: #00aeef;
+  --vitib-cyan-clair: #e5f8ff;
+  --vitib-vert: #4caf50;
+  --vitib-vert-clair: #e9f7ea;
+  --vitib-rouge: #e5533d;
+  --vitib-rouge-clair: #fdecea;
+  --vitib-gris-texte: #6c757d;
+  --vitib-gris-fond: #f4f6f9;
+
+  --sidebar-largeur: 264px;
+  --sidebar-largeur-reduite: 84px;
+  --header-hauteur: 68px;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--vitib-gris-fond);
+  scrollbar-gutter: stable;
+}
+
+/* ---------------------------------------------------------------------------
+   Identité de marque (conservée pour les écrans publics : connexion, QR…)
+   --------------------------------------------------------------------------- */
+
+.bg-vitib {
+  background: linear-gradient(90deg, var(--vitib-bleu) 0%, var(--vitib-orange) 100%);
+}
+
+.text-vitib {
+  color: var(--vitib-bleu) !important;
+}
+
+.btn-vitib {
+  background-color: var(--vitib-orange);
+  border-color: var(--vitib-orange);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-vitib:hover,
+.btn-vitib:focus {
+  background-color: var(--vitib-orange-fonce);
+  border-color: var(--vitib-orange-fonce);
+  color: #fff;
+}
+
+.btn-vitib:disabled {
+  background-color: var(--vitib-orange);
+  border-color: var(--vitib-orange);
+  color: #fff;
+  opacity: 0.65;
+}
+
+/* =============================================================================
+   STRUCTURE GÉNÉRALE : Sidebar + Header + Contenu
+   ============================================================================= */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* -------------------------- Sidebar -------------------------- */
+
+.app-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-largeur);
+  background: var(--vitib-bleu);
+  display: flex;
+  flex-direction: column;
+  z-index: 1040;
+  transition: width 0.2s ease, transform 0.25s ease;
+  overflow-x: hidden;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1.25rem 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  min-height: var(--header-hauteur);
+}
+
+.sidebar-logo-img {
+  height: 36px;
+  width: 36px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-texte {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+
+.sidebar-logo-texte small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sidebar-nav {
+  flex: 1 1 auto;
+  padding: 0.9rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+}
+
+.sidebar-lien {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-lien i {
+  font-size: 1.15rem;
+  width: 1.4rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-lien:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.sidebar-lien.actif {
+  background: var(--vitib-orange);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(247, 148, 29, 0.35);
+}
+
+.sidebar-deconnexion {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sidebar-deconnexion:hover {
+  background: var(--vitib-rouge);
+  color: #fff;
+}
+
+.sidebar-deconnexion i {
+  font-size: 1.15rem;
+  width: 1.4rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-voile {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1035;
+}
+
+/* Sidebar repliée (icônes seules) — bascule bureau */
+.app-shell.sidebar-reduite .app-sidebar {
+  width: var(--sidebar-largeur-reduite);
+}
+
+.app-shell.sidebar-reduite .sidebar-logo-texte,
+.app-shell.sidebar-reduite .sidebar-libelle {
+  display: none;
+}
+
+.app-shell.sidebar-reduite .app-corps {
+  margin-left: var(--sidebar-largeur-reduite);
+}
+
+/* -------------------------- Zone principale -------------------------- */
+
+.app-corps {
+  flex: 1 1 auto;
+  margin-left: var(--sidebar-largeur);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.2s ease;
+  min-width: 0;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  height: var(--header-hauteur);
+  background: #fff;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.btn-hamburger {
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  color: var(--vitib-bleu);
+  padding: 0.25rem 0.4rem;
+  border-radius: 8px;
+  line-height: 1;
+}
+
+.btn-hamburger:hover {
+  background: var(--vitib-gris-fond);
+}
+
+.app-header-titre {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--vitib-bleu);
+  margin: 0;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.btn-notification {
+  position: relative;
+  border: none;
+  background: var(--vitib-gris-fond);
+  color: var(--vitib-bleu);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-notification {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--vitib-rouge);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+}
+
+.app-header-utilisateur {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.avatar-utilisateur {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--vitib-bleu);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-header-nom {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #212529;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .app-header-nom {
+    display: none;
+  }
+}
+
+.app-contenu {
+  flex: 1 1 auto;
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+.app-footer {
+  background: transparent;
+}
+
+/* -------------------------- Comportement mobile -------------------------- */
+
+@media (max-width: 991.98px) {
+  .app-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .app-shell.sidebar-mobile-ouverte .app-sidebar {
+    transform: translateX(0);
+    width: var(--sidebar-largeur);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.25);
+  }
+
+  .app-shell.sidebar-mobile-ouverte .sidebar-logo-texte,
+  .app-shell.sidebar-mobile-ouverte .sidebar-libelle {
+    display: inline;
+  }
+
+  .app-corps,
+  .app-shell.sidebar-reduite .app-corps {
+    margin-left: 0;
+  }
+}
+
+/* =============================================================================
+   CARTES STATISTIQUES (KPI)
+   ============================================================================= */
+
+.carte-kpi {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #edf0f3;
+  border-left: 4px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.carte-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1.2rem rgba(0, 0, 0, 0.08);
+}
+
+.carte-kpi--bleue {
+  border-left-color: var(--vitib-bleu);
+}
+
+.carte-kpi--orange {
+  border-left-color: var(--vitib-orange);
+}
+
+.carte-kpi-corps {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.5rem;
+}
+
+.carte-kpi-icone {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.carte-kpi-icone--bleue {
+  background: var(--vitib-bleu-clair);
+  color: var(--vitib-bleu);
+}
+
+.carte-kpi-icone--orange {
+  background: var(--vitib-orange-clair);
+  color: var(--vitib-orange);
+}
+
+.carte-kpi-texte {
+  display: flex;
+  flex-direction: column;
+}
+
+.carte-kpi-valeur {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--vitib-bleu);
+  line-height: 1.1;
+}
+
+.carte-kpi-libelle {
+  color: #495057;
+  font-size: 0.92rem;
+  margin-top: 2px;
+}
+
+.carte-kpi-indice {
+  color: var(--vitib-cyan);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.carte-kpi-detail {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 1.5rem 1.25rem;
+  border-top: 1px solid #f1f3f5;
+}
+
+.carte-kpi-detail li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.88rem;
+  color: #495057;
+}
+
+.pastille-detail {
+  background: var(--vitib-gris-fond);
+  color: var(--vitib-bleu);
+  font-weight: 700;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+/* =============================================================================
+   TABLEAUX
+   ============================================================================= */
+
+.card {
+  border-radius: 14px;
+  border: 1px solid #edf0f3;
+}
+
+.table thead.table-light th,
+.table > :not(caption) > * > th {
+  background-color: #fbfaf7;
+  color: #495057;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-bottom: 2px solid var(--vitib-orange);
+}
+
+.table > :not(caption) > * > td {
+  vertical-align: middle;
+  font-size: 0.92rem;
+}
+
+.table-hover > tbody > tr:hover > * {
+  background-color: var(--vitib-cyan-clair);
+}
+
+/* Badges de type d'évènement */
+.badge-type {
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.72rem;
+  padding: 0.35em 0.75em;
+  text-transform: none;
+}
+
+.badge-type-reunion {
+  background: var(--vitib-cyan-clair);
+  color: #007ea3;
+}
+
+.badge-type-visite {
+  background: #f1e9fb;
+  color: #7b3fb8;
+}
+
+.badge-type-gala {
+  background: #fdecf3;
+  color: #c72e6b;
+}
+
+.badge-type-formation {
+  background: var(--vitib-vert-clair);
+  color: #2f7d33;
+}
+
+.badge-type-seminaire {
+  background: var(--vitib-orange-clair);
+  color: var(--vitib-orange-fonce);
+}
+
+.badge-type-autres {
+  background: #eef0f2;
+  color: #5a6268;
+}
+
+/* Recolorisation des badges Bootstrap existants (statuts, rôles, actions)
+   pour coller à la palette VITIB, SANS toucher aux classes appliquées
+   dans les composants (mêmes noms de classes Bootstrap conservés). */
+.badge {
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.72rem;
+  padding: 0.4em 0.8em;
+}
+
+.text-bg-success {
+  background-color: var(--vitib-vert-clair) !important;
+  color: #2f7d33 !important;
+}
+
+.text-bg-primary {
+  background-color: var(--vitib-cyan-clair) !important;
+  color: #007ea3 !important;
+}
+
+.text-bg-secondary {
+  background-color: #eef0f2 !important;
+  color: #5a6268 !important;
+}
+
+.text-bg-danger {
+  background-color: var(--vitib-rouge-clair) !important;
+  color: #c0392b !important;
+}
+
+.text-bg-warning {
+  background-color: var(--vitib-orange-clair) !important;
+  color: var(--vitib-orange-fonce) !important;
+}
+
+.text-bg-dark {
+  background-color: var(--vitib-bleu) !important;
+  color: #fff !important;
+}
+
+.text-bg-info {
+  background-color: var(--vitib-cyan-clair) !important;
+  color: #007ea3 !important;
+}
+
+.text-bg-light {
+  background-color: var(--vitib-gris-fond) !important;
+  color: #495057 !important;
+}
+
+/* Boutons d'action de tableau (Code QR, Annuler…) */
+.btn-outline-secondary {
+  border-color: #d7dce1;
+  color: #495057;
+}
+
+.btn-outline-secondary:hover {
+  background: var(--vitib-cyan);
+  border-color: var(--vitib-cyan);
+  color: #fff;
+}
+
+.btn-outline-danger {
+  color: var(--vitib-rouge);
+  border-color: var(--vitib-rouge);
+}
+
+.btn-outline-danger:hover {
+  background: var(--vitib-rouge);
+  border-color: var(--vitib-rouge);
+}
+
+/* =============================================================================
+   MODALES
+   ============================================================================= */
+
+.modal-content {
+  border-radius: 16px;
+  border: none;
+  overflow: hidden;
+}
+
+.modal-header {
+  border-bottom: none;
+  padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.modal-header--avertissement {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.modal-icone-avertissement {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--vitib-orange-clair);
+  color: var(--vitib-orange);
+  font-size: 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  padding: 0.5rem 1.5rem 1rem;
+  color: #495057;
+}
+
+.modal-footer {
+  border-top: none;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.modal-footer .btn-secondary {
+  background: var(--vitib-gris-fond);
+  border-color: var(--vitib-gris-fond);
+  color: #495057;
+  font-weight: 600;
+}
+
+.modal-footer .btn-secondary:hover {
+  background: #e6e9ec;
+  border-color: #e6e9ec;
+  color: #212529;
+}
+
+.modal-footer .btn-danger {
+  background: var(--vitib-orange);
+  border-color: var(--vitib-orange);
+  font-weight: 600;
+}
+
+.modal-footer .btn-danger:hover {
+  background: var(--vitib-orange-fonce);
+  border-color: var(--vitib-orange-fonce);
+}
+
+/* ---------------------------------------------------------------------------
+   Cartes statistiques cliquables héritées (nav par onglets, non utilisées
+   par la sidebar mais conservées pour compatibilité).
+   --------------------------------------------------------------------------- */
+
+.nav-tabs {
+  border-bottom: 1px solid #edf0f3;
+}
+
+.nav-tabs .nav-link {
+  color: #6c757d;
+  font-weight: 600;
+  border: none;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--vitib-bleu);
+  background: transparent;
+  border-bottom-color: var(--vitib-orange);
+}
+
+/* ---------------------------------------------------------------------------
+   Zone de signature (formulaire public)
+   --------------------------------------------------------------------------- */
+
+.zone-signature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.zone-signature canvas {
+  border: 2px dashed #adb5bd;
+  border-radius: 0.5rem;
+  background: #fff;
+  touch-action: none;
+  max-width: 100%;
+}
+
+.vignette-signature {
+  width: 120px;
+  height: 42px;
+  object-fit: contain;
+  object-position: left center;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   Code QR
+   --------------------------------------------------------------------------- */
+
+.cadre-qr {
+  display: inline-block;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 12px;
+}
+
+.cadre-qr svg {
+  display: block;
+  width: 280px;
+  height: 280px;
+}
+
+@media (max-width: 400px) {
+  .cadre-qr svg {
+    width: 220px;
+    height: 220px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Tableaux à largeur stable (journal)
+   --------------------------------------------------------------------------- */
+
+.table-stable {
+  table-layout: fixed;
+}
+
+.table-stable th,
+.table-stable td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-journal th:nth-child(1),
+.table-journal td:nth-child(1) {
+  width: 15%;
+}
+.table-journal th:nth-child(2),
+.table-journal td:nth-child(2) {
+  width: 27%;
+}
+.table-journal th:nth-child(3),
+.table-journal td:nth-child(3) {
+  width: 15%;
+}
+.table-journal th:nth-child(4),
+.table-journal td:nth-child(4) {
+  width: 13%;
+}
+.table-journal th:nth-child(5),
+.table-journal td:nth-child(5) {
+  width: 30%;
+}
+
+/* ---------------------------------------------------------------------------
+   Notifications flottantes
+   --------------------------------------------------------------------------- */
+
+.zone-notifications {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1080;
+  width: min(420px, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.zone-notifications .alert {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  margin-bottom: 0;
+  border-radius: 12px;
+}
+
+/* ---------------------------------------------------------------------------
+   Impression : feuille d'émargement et fiche du code QR
+   --------------------------------------------------------------------------- */
+
+.a-imprimer-seulement {
+  display: none;
+}
+
+@media print {
+  .sans-impression,
+  nav,
+  footer,
+  .btn,
+  .alert,
+  .zone-notifications {
+    display: none !important;
+  }
+
+  .a-imprimer-seulement {
+    display: block !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .app-corps {
+    margin-left: 0 !important;
+  }
+
+  .app-contenu {
+    padding: 0 !important;
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .table-responsive {
+    overflow: visible !important;
+  }
+
+  .table {
+    width: 100% !important;
+    font-size: 0.85rem;
+  }
+
+  .table td,
+  .table th {
+    padding: 8px 10px;
+  }
+
+  .vignette-signature {
+    height: 38px;
+    border: none;
+  }
+
+  .cadre-qr svg {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+
+
+/* ============================================================================
+   Ajouts : panneau de notifications de la cloche, photo de profil
+   ============================================================================ */
+
+.dropdown-notifications {
+  position: relative;
+}
+
+.panneau-notifications {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 340px;
+  max-width: calc(100vw - 2rem);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.15);
+  border: 1px solid #edf0f3;
+  z-index: 1090;
+  overflow: hidden;
+}
+
+.panneau-notifications-entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.panneau-notifications-liste {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.panneau-notification-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid #f4f6f9;
+}
+
+.panneau-notification-item:hover {
+  background: var(--vitib-gris-fond);
+}
+
+.panneau-notification-item.non-lue {
+  background: var(--vitib-cyan-clair);
+}
+
+.avatar-utilisateur--photo {
+  object-fit: cover;
+}
+
+.avatar-utilisateur--grand {
+  width: 96px;
+  height: 96px;
+  font-size: 1.5rem;
+}
+
+.photo-profil-apercu {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--vitib-gris-fond);
+}
+
+.barre-chargement {
+  position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 2000;
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--vitib-bleu), var(--vitib-orange));
+  animation: chargement 1.2s ease-in-out infinite;
+}
+@keyframes chargement {
+  0% { transform: scaleX(0); }
+  60% { transform: scaleX(0.8); }
+  100% { transform: scaleX(1); opacity: 0.4; }
+}

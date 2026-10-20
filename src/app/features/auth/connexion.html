@@ -1,0 +1,64 @@
+<div class="container py-4">
+  <div class="row justify-content-center align-items-center" style="min-height: 85vh">
+    <div class="col-12 col-sm-9 col-md-7 col-lg-5 col-xl-4">
+      <div class="card shadow border-0">
+        <div class="card-header bg-vitib text-white text-center py-4">
+          <img
+            src="assets/images/logo_vitib.png"
+            alt="Logo VITIB"
+            height="64"
+            class="bg-white rounded p-1 mb-2"
+          />
+          <h1 class="h4 mb-0">VITIB Présences</h1>
+          <p class="mb-0 small opacity-75">Bienvenue au VITIB</p>
+        </div>
+
+        <div class="card-body p-4">
+          @if (erreur(); as message) {
+            <div class="alert alert-danger" role="alert">{{ message }}</div>
+          }
+
+          <form [formGroup]="formulaire" (ngSubmit)="soumettre()" novalidate>
+            <div class="mb-3">
+              <label for="email" class="form-label">Adresse email</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                formControlName="email"
+                autocomplete="username"
+                placeholder="vous@vitib.ci"
+                autofocus
+              />
+            </div>
+
+            <div class="mb-4">
+              <label for="motDePasse" class="form-label">Mot de passe</label>
+              <input
+                type="password"
+                id="motDePasse"
+                class="form-control"
+                formControlName="motDePasse"
+                autocomplete="current-password"
+              />
+            </div>
+
+            <button type="submit" class="btn btn-vitib w-100" [disabled]="envoiEnCours()">
+              @if (envoiEnCours()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                Connexion en cours…
+              } @else {
+                Se connecter
+              }
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <p class="text-center text-muted small mt-3">
+        Plateforme interne du VITIB — Village de l'Innovation des Technologies de l'Information
+        et de la Biotechnologie.
+      </p>
+    </div>
+  </div>
+</div>

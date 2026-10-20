@@ -1,0 +1,76 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ titre() }}</h1>
+  @if (consultationExterne()) {
+    <a routerLink="/comptes" class="btn btn-outline-secondary btn-sm">← Retour aux comptes</a>
+  }
+</div>
+
+<p class="text-muted">
+  Réunions et évènements auxquels
+  {{ consultationExterne() ? 'ce compte a' : 'vous avez' }} participé (présence enregistrée via le
+  code QR).
+</p>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Évènement</th>
+            <th class="d-none d-md-table-cell">Type</th>
+            <th class="d-none d-lg-table-cell">Organisateur</th>
+            <th>Date</th>
+            <th class="d-none d-sm-table-cell">Horaires</th>
+            <th>Arrivée</th>
+            <th class="d-none d-lg-table-cell">Liaison</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (participation of participations(); track participation.evenementId) {
+            <tr>
+              <td>
+                <a
+                  [routerLink]="['/evenements', participation.evenementId]"
+                  class="text-decoration-none fw-semibold"
+                >
+                  {{ participation.titre }}
+                </a>
+                <app-badge-statut
+                  class="ms-1"
+                  [statut]="participation.statut"
+                  [libelle]="participation.statutLibelle"
+                />
+              </td>
+              <td class="d-none d-md-table-cell">{{ participation.typeLibelle }}</td>
+              <td class="d-none d-lg-table-cell">{{ participation.organisateurNom }}</td>
+              <td class="text-nowrap">{{ participation.dateEvenement | dateFr }}</td>
+              <td class="d-none d-sm-table-cell text-nowrap">
+                {{ participation.heureDebut | heureFr }} – {{ participation.heureFin | heureFr }}
+              </td>
+              <td class="text-nowrap">{{ participation.heureArrivee | heureFr }}</td>
+              <td class="d-none d-lg-table-cell">
+                <span
+                  class="badge text-bg-light border"
+                  [title]="
+                    participation.lienVia === 'session'
+                      ? 'Scan du code QR en étant connecté'
+                      : 'Rapprochement par adresse email'
+                  "
+                >
+                  {{ participation.lienLibelle }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                Aucune participation enregistrée pour le moment.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
