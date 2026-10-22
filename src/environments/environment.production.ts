@@ -4,6 +4,6 @@
  */
 export const environment = {
   production: false,
-  urlApi: 'https://vitib-backend.onrender.com',
+  urlApi: 'https://vitib-backend.onrender.com/api',
   intervalleActiviteMs: 120_000,
 };
